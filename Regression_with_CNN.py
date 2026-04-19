@@ -454,10 +454,10 @@ submission.to_csv('submission_5.csv', index=False)
 submission.to_csv(f'{artifacts_dir}/submission_5.csv', index=False)
 print("Saved: submission_5.csv")
 
-# %% [markdown]
-# # Create summary report
+# ============================================================================
+# Create summary report (ASCII only - no Unicode)
+# ============================================================================
 
-# %%
 summary_report = f"""
 ================================================================================
 CNN REGRESSION MODEL - TRAINING SUMMARY
@@ -483,27 +483,37 @@ MODEL ARCHITECTURE:
 - Total parameters: {model.count_params():,}
 
 FILES GENERATED:
-✓ model_results.png
-✓ predictions_vs_actual.png
-✓ residuals_analysis.png
-✓ metrics.txt
-✓ metrics.json
-✓ model_summary.txt
-✓ submission_5.csv
-✓ cnn_regression_model.h5
-✓ data_info.json
-✓ summary_report.txt
+[+] model_results.png
+[+] predictions_vs_actual.png
+[+] residuals_analysis.png
+[+] metrics.txt
+[+] metrics.json
+[+] model_summary.txt
+[+] submission_5.csv
+[+] cnn_regression_model.h5
+[+] data_info.json
+[+] summary_report.txt
 
 ================================================================================
 """
 
-with open('summary_report.txt', 'w') as f:
-    f.write(summary_report)
+# Save summary report
+try:
+    with open('summary_report.txt', 'w', encoding='utf-8') as f:
+        f.write(summary_report)
+    print("Saved: summary_report.txt")
+except UnicodeEncodeError:
+    # Fallback to ASCII-only
+    with open('summary_report.txt', 'w') as f:
+        f.write(summary_report)
+    print("Saved: summary_report.txt (ASCII)")
 
 print("\n" + summary_report)
 
-# %%
+# ============================================================================
 # List all generated files
+# ============================================================================
+
 print("\n" + "="*50)
 print("ALL GENERATED FILES:")
 print("="*50)
@@ -514,9 +524,9 @@ files = ['model_results.png', 'predictions_vs_actual.png', 'residuals_analysis.p
 for file in files:
     if os.path.exists(file):
         size = os.path.getsize(file) / 1024
-        print(f"✓ {file} ({size:.2f} KB)")
+        print(f"[+] {file} ({size:.2f} KB)")
     else:
-        print(f"✗ {file} (NOT FOUND)")
+        print(f"[-] {file} (NOT FOUND)")
 
 print("="*50)
 print("TRAINING COMPLETED SUCCESSFULLY!")
