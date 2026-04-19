@@ -35,7 +35,7 @@ y = np.arange(-90,  110, 4).reshape(-1, 1)
 X_train, y_train = X[:40], y[:40]
 X_test,  y_test  = X[40:], y[40:]
 
-tf.random.set_seed(42)
+tf.random.set_seed(34)
 
 model = tf.keras.Sequential([
     tf.keras.layers.Input(shape=(1,)),
