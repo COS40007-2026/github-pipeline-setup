@@ -1,3 +1,3 @@
 # github-pipeline-setup
 
-Follow the instructions and use this for yiour second grouop task.
+Follow the instructions in the PDF and use this for your second group task. Also, watch the video on Canvas
