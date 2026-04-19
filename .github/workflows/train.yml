@@ -34,6 +34,7 @@ jobs:
 
       # Generate report and publish
       - name: Create CML report
+        env: REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "## Model Metrics" > report.md
           cat metrics.txt >> report.md
