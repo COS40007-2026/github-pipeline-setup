@@ -38,8 +38,7 @@ jobs:
       # 5. Train the model — runs model.py
       - name: Train model
         run: |
-         # Your ML workflow goes here
-          python train.py          
+          python model.py          
           echo "## Model Metrics" > report.md
           cat metrics.txt >> report.md          
           echo "\n## Model Performance" >> report.md
