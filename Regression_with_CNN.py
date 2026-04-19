@@ -134,10 +134,6 @@ for var in cat_vars:
 
 # %% [markdown]
 # # Count encoder
-
-# %%
-pip install category_encoders
-
 # %%
 import category_encoders as ce
 
