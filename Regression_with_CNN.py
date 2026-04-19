@@ -8,20 +8,16 @@ for dirname, _, filenames in os.walk('/kaggle/input'):
 import numpy as np 
 import pandas as pd 
 import seaborn as sns
+import matplotlib.pyplot as plt
 
 # %%
 data = pd.read_csv("train/train.csv")
-
-# %%
 dtest = pd.read_csv("test/test.csv")
 
 # %% [markdown]
 # ### Missing Values
-# 
-# * No missing values
 
 # %%
-# make a list of the variables that contain missing values
 vars_with_na = data.columns[data.isnull().any()].tolist()
 vars_with_na_test = dtest.columns[dtest.isnull().any()].tolist()
 print (len(vars_with_na), len(vars_with_na_test))
@@ -36,7 +32,6 @@ train_test_data = [data, dtest]
 # list of numerical variables
 for dataset in train_test_data:
     num_vars = [var for var in dataset.columns if dataset[var].dtypes != 'O']
-
     print('Number of numerical variables: ', len(num_vars))
 
 # %% [markdown]
@@ -44,23 +39,26 @@ for dataset in train_test_data:
 
 # %%
 num_vars = [var for var in data.columns if data[var].dtypes != 'O']
-Xdatanum = data[num_vars].drop(["ID", "y"], axis = 1)
+Xdatanum = data[num_vars].drop(["ID", "y"], axis=1)
+
+# FIX: Ensure all columns are numeric
 for var in Xdatanum.columns:
-    if Xdatanum[var].max()>1:
-        print ("there are value greater than 1")
+    # Convert to numeric if possible
+    Xdatanum[var] = pd.to_numeric(Xdatanum[var], errors='coerce')
+    
+    # Skip if column became all NaN
+    if Xdatanum[var].isna().all():
+        continue
+        
+    if Xdatanum[var].max() > 1:
+        print(f"Column {var} has values greater than 1")
 
 # %%
 # list of categorical variables
 cat_vars = [var for var in data.columns if data[var].dtypes == 'O']
-
 print('Number of categorical variables: ', len(cat_vars))
 
-# visualise the numerical variables
-data[cat_vars].head()
-
 # %%
-import matplotlib.pyplot as plt
-
 for c in data[cat_vars]:
     value_counts = data[c].value_counts()
     fig, ax = plt.subplots(figsize=(10, 5))
@@ -74,23 +72,19 @@ for c in data[cat_vars]:
 
 # %% [markdown]
 # ### Looking at individual plot
-# 
-# * change the label column
 
 # %%
-sns.boxplot(x = data["X0"] , y = "y" , data= data)
+sns.boxplot(x=data["X0"], y="y", data=data)
 
 # %%
-sns.scatterplot(x = data["X4"] , y = "y" , data= data)
+sns.scatterplot(x=data["X4"], y="y", data=data)
 
 # %% [markdown]
 # ### Suspicious data
 
 # %%
 suspiciousData = []
-
 for col in data:
-    
     if len(data[col].unique()) == 1:
         suspiciousData.append(col)
 data[suspiciousData].describe()
@@ -100,8 +94,7 @@ data[suspiciousData].describe()
 
 # %%
 for dataset in train_test_data:
-
-    dataset = dataset.drop(suspiciousData, axis=1, inplace = True)
+    dataset.drop(suspiciousData, axis=1, inplace=True)
 
 # %% [markdown]
 # ### Type of data
@@ -130,10 +123,11 @@ categoricalData.info()
 # %%
 for var in cat_vars:
     fig, ax = plt.subplots(figsize=(10, 5))
-    sns.barplot(x = var, y = "y" , data = data)
+    sns.barplot(x=var, y="y", data=data)
 
 # %% [markdown]
 # # Count encoder
+
 # %%
 import category_encoders as ce
 
@@ -146,15 +140,14 @@ data = data.join(Count_enc.transform(data[cat_vars]).add_suffix('_count'))
 dtest = dtest.join(Count_enc.transform(dtest[cat_vars]).add_suffix('_count'))
 
 # %%
-data = data.drop(data[cat_vars], axis = 1)
-dtest = dtest.drop(dtest[cat_vars], axis = 1)
+data = data.drop(data[cat_vars], axis=1)
+dtest = dtest.drop(dtest[cat_vars], axis=1)
 
 # %% [markdown]
 # # Feature Scaling
 
 # %%
-cat_count = ['X0_count', 'X1_count', 'X2_count', 'X3_count',
-       'X4_count', 'X5_count', 'X6_count', 'X8_count']
+cat_count = [col for col in data.columns if col.endswith('_count')]
 
 # %%
 from sklearn.preprocessing import MinMaxScaler
@@ -164,28 +157,25 @@ data[cat_count] = scaler.transform(data[cat_count])
 dtest[cat_count] = scaler.transform(dtest[cat_count])
 print(scaler.data_max_)
 
-# %%
-data.describe()
-
 # %% [markdown]
-# ## Outilier
+# ## Define X and y
 
 # %%
-#data = data[data["y"] < 220]
-
-# %% [markdown]
-# # Define X and y
+data = data.drop("ID", axis=1)
 
 # %%
-data =  data.drop("ID" , axis = 1)
-
-# %%
-X = data.drop("y" , axis =  1)
+X = data.drop("y", axis=1)
 y = data["y"]
 X.shape
 
 # %%
-X= X.values
+# Convert all columns to numeric, coercing errors to NaN
+X = X.apply(pd.to_numeric, errors='coerce')
+# Fill NaN values with 0 or mean
+X = X.fillna(0)
+
+# %%
+X = X.values
 y = y.values
 
 # %% [markdown]
@@ -193,7 +183,7 @@ y = y.values
 
 # %%
 from sklearn.model_selection import train_test_split
-X_train, X_test, y_train, y_test = train_test_split(X,y, random_state=0, test_size = 0.2 )
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0, test_size=0.2)
 
 # %% [markdown]
 # # Build and train the CNN model
@@ -203,15 +193,31 @@ import keras
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Conv2D, MaxPooling2D
-
+from keras.layers import BatchNormalization
 from keras import backend as K
 
 # %%
 batch_size = 15
-epochs =10
-# input image dimensions
-img_rows, img_cols = 28, 13
-#inputshape = X.shape[1]
+epochs = 10
+
+# FIX: Calculate the correct dimensions
+n_features = X.shape[1]
+# Find the closest square-ish dimensions
+img_rows = int(np.sqrt(n_features))
+img_cols = n_features // img_rows
+# Adjust if product doesn't match
+while img_rows * img_cols < n_features:
+    img_cols += 1
+
+print(f"Original features: {n_features}")
+print(f"Reshaping to: {img_rows} x {img_cols} = {img_rows * img_cols}")
+
+# Pad features if necessary
+n_pad = img_rows * img_cols - n_features
+if n_pad > 0:
+    print(f"Padding {n_pad} zeros to features")
+    X_train = np.pad(X_train, ((0, 0), (0, n_pad)), mode='constant')
+    X_test = np.pad(X_test, ((0, 0), (0, n_pad)), mode='constant')
 
 # %%
 if K.image_data_format() == 'channels_first':
@@ -239,107 +245,99 @@ def r2_keras(y_true, y_pred):
     return 1 - SS_res / (SS_tot + 1e-7)
 
 # %%
-import matplotlib.pyplot as plt
-
-plt.imshow(X_train[0].reshape(28,13))
+plt.imshow(X_train[0].reshape(img_rows, img_cols))
+plt.title(f"Sample input image ({img_rows}x{img_cols})")
+plt.colorbar()
+plt.show()
 
 # %%
-from keras.layers import BatchNormalization
-
 model = Sequential()
-#model.add(Dense(256, activation='relu', input_dim=366))
-model.add(Conv2D(64, (3, 3), activation='relu', input_shape = input_shape))
-#model.add(Conv2D(128, (3, 3), activation='relu'))
-#model.add(Conv2D(64, (3, 3), init='uniform'))
-
+model.add(Conv2D(64, (3, 3), activation='relu', input_shape=input_shape, padding='same'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
-
 model.add(Flatten())
-
 model.add(Dense(512, activation='relu'))
 model.add(Dropout(0.1))
-
 model.add(Dense(256, activation='relu'))
 model.add(Dense(128, activation='relu'))
-
 model.add(Dense(1, activation='linear'))
 
-
-model.compile(loss='mean_squared_error', # one may use 'mean_absolute_error' as  mean_squared_error
-                  optimizer='adam',
-                  metrics=[r2_keras] # you can add several if needed
-                 )
+model.compile(loss='mean_squared_error',
+              optimizer='adam',
+              metrics=[r2_keras])
 
 model.summary()
 
 # %%
-model.fit(X_train, y_train,
-          batch_size=batch_size,
-          epochs=epochs,
-          verbose=2,
-          validation_data=(X_test, y_test))
+history = model.fit(X_train, y_train,
+                    batch_size=batch_size,
+                    epochs=epochs,
+                    verbose=2,
+                    validation_data=(X_test, y_test))
+
 score = model.evaluate(X_test, y_test, verbose=0)
 
 # %%
 print('Test loss:', score)
 
 # %% [markdown]
-# # visualise the predictions and residuals
+# # Visualise the predictions and residuals
 
 # %%
 preds = model.predict(X_test)
 preds = preds[:,0]
 plt.scatter(y_test, preds)
+plt.xlabel('True Values')
+plt.ylabel('Predictions')
+plt.title('Predictions vs True Values')
+plt.show()
 
 # %%
 residuals = y_test - preds
 sns.distplot(residuals)
+plt.title('Residuals Distribution')
+plt.show()
 
 # %%
 from sklearn.metrics import r2_score
-r2_score(y_test, preds)  
+r2 = r2_score(y_test, preds)
+print(f'R2 Score: {r2}')
 
 # %% [markdown]
-# # testing
+# # Testing
 
 # %%
 test_data = dtest.drop("ID", axis=1).copy()
-#test_data = dtest[selectedFeatures].copy()
 
-X = test_data.values
-X.shape
+# Convert to numeric and handle NaN
+test_data = test_data.apply(pd.to_numeric, errors='coerce')
+test_data = test_data.fillna(0)
+
+X_test_final = test_data.values
+print(f"Test data shape: {X_test_final.shape}")
+
+# Pad if necessary
+if n_pad > 0:
+    X_test_final = np.pad(X_test_final, ((0, 0), (0, n_pad)), mode='constant')
 
 # %%
 if K.image_data_format() == 'channels_first':
-    X = X.reshape(X.shape[0], 1, img_rows, img_cols)
-    
-    input_shape = (1, img_rows, img_cols)
+    X_test_final = X_test_final.reshape(X_test_final.shape[0], 1, img_rows, img_cols)
 else:
-    X = X.reshape(X.shape[0], img_rows, img_cols, 1)
-    
-    input_shape = (img_rows, img_cols, 1)
+    X_test_final = X_test_final.reshape(X_test_final.shape[0], img_rows, img_cols, 1)
 
-X = X.astype('float32')
+X_test_final = X_test_final.astype('float32')
 
-print('X shape:', X.shape)
-
-print(X.shape[0], 'test samples')
+print('Test samples shape:', X_test_final.shape)
 
 # %%
-prediction = model.predict(X)
-
-# %%
+prediction = model.predict(X_test_final)
 prediction = prediction[:,0]
 
 # %%
-dtest.info()
-
-# %%
 submission = pd.DataFrame({
-        "ID": dtest["ID"],
-        "y": prediction
-    })
+    "ID": dtest["ID"],
+    "y": prediction
+})
 
 submission.to_csv('submission_5.csv', index=False)
-
-
+print("Submission saved to submission_5.csv")
