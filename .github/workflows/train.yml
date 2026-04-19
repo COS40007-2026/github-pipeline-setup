@@ -37,7 +37,7 @@ jobs:
 
       # 5. Train the model — runs model.py
       - name: Train model
-        run: python Regression_with_CNN.py
+        run: python model.py
 
       # 6. Upload the saved plot and metrics as artefacts
       #    so you can download them from the GitHub Actions UI
@@ -47,17 +47,17 @@ jobs:
           name: model-results
           path: |
             #first one
-            # model_results.png
-            # metrics.txt
             model_results.png
-            predictions_vs_actual.png
-            residuals_analysis.png
             metrics.txt
-            metrics.json
-            model_summary.txt
-            submission_5.csv
-            cnn_regression_model.h5
-            data_info.json
-            summary_report.txt
+            # model_results.png
+            # predictions_vs_actual.png
+            # residuals_analysis.png
+            # metrics.txt
+            # metrics.json
+            # model_summary.txt
+            # submission_5.csv
+            # cnn_regression_model.h5
+            # data_info.json
+            # summary_report.txt
           compression-level: 9
           retention-days: 90
