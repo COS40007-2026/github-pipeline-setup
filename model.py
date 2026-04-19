@@ -39,7 +39,6 @@ tf.random.set_seed(42)
 
 model = tf.keras.Sequential([
     tf.keras.layers.Input(shape=(1,)),
-    tf.keras.layers.Dense(1),
     tf.keras.layers.Dense(1)
 ])
 
@@ -53,11 +52,7 @@ model.fit(X_train, y_train, epochs=10, verbose=0)
 
 y_preds = model.predict(X_test)
 
-plot_predictions(
-    train_data=X_train, train_labels=y_train,
-    test_data=X_test,   test_labels=y_test,
-    predictions=y_preds
-)
+# plot_predictions( train_data=X_train, train_labels=y_train, test_data=X_test,   test_labels=y_test, predictions=y_preds)
 
 mae_1 = np.round(float(mae(y_test.squeeze(), y_preds.squeeze())), 2)
 mse_1 = np.round(float(mse(y_test.squeeze(), y_preds.squeeze())), 2)
