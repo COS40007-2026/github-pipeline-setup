@@ -8,40 +8,20 @@ on:
   workflow_dispatch:           # allows manual trigger from GitHub UI
 
 jobs:
-  train:
-    runs-on: ubuntu-latest    # GitHub-hosted Linux runner (free)
-
+  run:
+    runs-on: [ubuntu-latest]
     steps:
-      # 1. Check out the repository code
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      # 2. Set up Python
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      # 3. Cache pip packages so repeat runs are faster
-      - name: Cache pip dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      # 4. Install dependencies from requirements.txt
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      # 5. Train the model — runs model.py
-      - name: Train model
+      - uses: actions/checkout@v2
+      - name: 'Train my model'
         run: |
+          # Your ML workflow goes here
+          cd ./"Github-ML-pipeline-Demo"
+          echo "Changed Directory Successfully"
+          pip install -r requirements.txt
           python model.py          
           echo "## Model Metrics" > report.md
           cat metrics.txt >> report.md          
           echo "\n## Model Performance" >> report.md
           echo "Model performance metrics are on the plot below." >> report.md          
-          model_results.png --md >> report.md          
+          cml-publish model_results.png --md >> report.md          
           cml-send-comment report.md
