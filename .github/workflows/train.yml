@@ -39,13 +39,10 @@ jobs:
       - name: Train model
         run: |
          # Your ML workflow goes here
-          cd ./"Github-ML-pipeline-Demo"
-          echo "Changed Directory Successfully"
-          pip install -r requirements.txt
           python train.py          
           echo "## Model Metrics" > report.md
           cat metrics.txt >> report.md          
           echo "\n## Model Performance" >> report.md
           echo "Model performance metrics are on the plot below." >> report.md          
-          cml-publish model_results.png --md >> report.md          
+          model_results.png --md >> report.md          
           cml-send-comment report.md
