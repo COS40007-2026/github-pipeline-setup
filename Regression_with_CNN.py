@@ -10,10 +10,10 @@ import pandas as pd
 import seaborn as sns
 
 # %%
-data = pd.read_csv("/train/train.csv")
+data = pd.read_csv("train/train.csv")
 
 # %%
-dtest = pd.read_csv("/test/test.csv")
+dtest = pd.read_csv("test/test.csv")
 
 # %% [markdown]
 # ### Missing Values
