@@ -46,5 +46,6 @@ jobs:
         with:
           name: model-results
           path: |
-            model_results.png
-            metrics.txt
+            # model_results.png
+            # metrics.txt
+            submission_5.csv
