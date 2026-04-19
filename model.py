@@ -199,7 +199,7 @@ print("="*50)
 save_metrics_to_file(mae_value, mse_value)
 
 # ============================================================================
-# OPTIONAL: Visualize training history
+# Visualize training history
 # ============================================================================
 
 # Plot training history
