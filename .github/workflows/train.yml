@@ -48,6 +48,7 @@ jobs:
           path: |
             #first one
             model_results.png
+            training_history.png
             metrics.txt
             # model_results.png
             # predictions_vs_actual.png
