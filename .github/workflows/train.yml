@@ -37,20 +37,15 @@ jobs:
 
       # 5. Train the model — runs model.py
       - name: Train model
-        run: python model.py
-
-      # 6. Upload the saved plot and metrics as artefacts
-      #    so you can download them from the GitHub Actions UI
-      - name: Upload results
-        uses: actions/upload-artifact@v4
-        with:
-          name: model-results
-          path: |
-            model_results.png
-            metrics.txt
-            echo "## Model Metrics" > report.md
-            cat metrics.txt >> report.md          
-            echo "\n## Model Performance" >> report.md
-            echo "Model performance metrics are on the plot below." >> report.md          
-            model_results.png --md >> report.md          
-            cml-send-comment report.md
+        run: |
+         # Your ML workflow goes here
+          cd ./"Github-ML-pipeline-Demo"
+          echo "Changed Directory Successfully"
+          pip install -r requirements.txt
+          python train.py          
+          echo "## Model Metrics" > report.md
+          cat metrics.txt >> report.md          
+          echo "\n## Model Performance" >> report.md
+          echo "Model performance metrics are on the plot below." >> report.md          
+          cml-publish model_results.png --md >> report.md          
+          cml-send-comment report.md
