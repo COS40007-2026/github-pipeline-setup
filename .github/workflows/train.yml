@@ -39,7 +39,7 @@ jobs:
       - name: Train model
         run: python model.py
 
-      # 6. Upload the saved plot and metrics as artifacts
+      # 6. Upload the saved plot and metrics as artefacts
       #    so you can download them from the GitHub Actions UI
       - name: Upload results
         uses: actions/upload-artifact@v4
@@ -48,3 +48,9 @@ jobs:
           path: |
             model_results.png
             metrics.txt
+            echo "## Model Metrics" > report.md
+            cat metrics.txt >> report.md          
+            echo "\n## Model Performance" >> report.md
+            echo "Model performance metrics are on the plot below." >> report.md          
+            cml-publish model_results.png --md >> report.md          
+            cml-send-comment report.md
