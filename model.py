@@ -48,7 +48,7 @@ model.compile(
     metrics=['mae']
 )
 
-model.fit(X_train, y_train, epochs=10, verbose=0)
+model.fit(X_train, y_train, epochs=5, verbose=0)
 
 y_preds = model.predict(X_test)
 
