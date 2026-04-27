@@ -161,8 +161,8 @@ import tensorflow as tf
 
 # %%
 # For 1D CNN (better for tabular data)
-batch_size = 32
-epochs = 50
+batch_size = 16
+epochs = 10
 
 # Reshape for 1D CNN: (samples, features, 1)
 X_train_cnn = X_train.reshape(X_train.shape[0], X_train.shape[1], 1)
